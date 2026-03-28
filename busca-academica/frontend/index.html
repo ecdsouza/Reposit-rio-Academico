@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Repositório Acadêmico — Busca Integrada</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,500;1,8..60,300;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ─────────────────────────────────────────────────────
+       VARIÁVEIS & RESET
+    ───────────────────────────────────────────────────── */
+    :root {
+      --ink:        #1a1714;
+      --ink-soft:   #4a4540;
+      --ink-muted:  #8a847e;
+      --parchment:  #f7f4ef;
+      --cream:      #fdfbf8;
+      --border:     #ddd8d0;
+      --border-light: #edeae4;
+      --gold:       #b8860b;
+      --gold-light: #d4a017;
+      --capes:      #1b4f72;
+      --scielo:     #145a32;
+      --bdtd:       #6e2f1a;
+      --shadow-sm:  0 1px 3px rgba(26,23,20,.08);
+      --shadow-md:  0 4px 16px rgba(26,23,20,.12);
+      --shadow-lg:  0 8px 32px rgba(26,23,20,.16);
+      --radius:     3px;
+      --max-w:      1280px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Source Serif 4', Georgia, serif;
+      background: var(--parchment);
+      color: var(--ink);
+      min-height: 100vh;
+      font-size: 16px;
+      line-height: 1.7;
+    }
+
+    /* ─────────────────────────────────────────────────────
+       CABEÇALHO
+    ───────────────────────────────────────────────────── */
+    header {
+      background: var(--ink);
+      color: var(--cream);
+      padding: 0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .header-inner {
+      max-width: var(--max-w);
+      margin: 0 auto;
+      padding: 18px 24px 14px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .logo-block {
+      flex-shrink: 0;
+    }
+
+    .logo-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.1rem, 3vw, 1.5rem);
+      font-weight: 700;
+      letter-spacing: .02em;
+      color: var(--cream);
+      line-height: 1.2;
+    }
+
+    .logo-sub {
+      font-size: .72rem;
+      color: var(--gold-light);
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      font-family: 'JetBrains Mono', monospace;
+      margin-top: 2px;
+    }
+
+    .header-rule {
+      width: 1px;
+      height: 40px;
+      background: rgba(255,255,255,.15);
+      flex-shrink: 0;
+    }
+
+    .source-badges {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 10px;
+      border-radius: 2px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .68rem;
+      font-weight: 500;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all .2s;
+      user-select: none;
+    }
+
+    .badge.active-capes  { background: var(--capes); color: #fff; }
+    .badge.active-scielo { background: var(--scielo); color: #fff; }
+    .badge.active-bdtd   { background: var(--bdtd);  color: #fff; }
+    .badge.inactive { background: transparent; color: rgba(255,255,255,.4); border-color: rgba(255,255,255,.2); }
+
+    .badge .dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: currentColor; opacity: .8;
+    }
+
+    /* ─────────────────────────────────────────────────────
+       PAINEL DE BUSCA
+    ───────────────────────────────────────────────────── */
+    .search-panel {
+      background: var(--cream);
+      border-bottom: 1px solid var(--border);
+      padding: 28px 24px;
+    }
+
+    .search-inner {
+      max-width: var(--max-w);
+      margin: 0 auto;
+    }
+
+    .search-row {
+      display: flex;
+      gap: 10px;
+      align-items: stretch;
+    }
+
+    .search-field {
+      position: relative;
+      flex: 1;
+    }
+
+    .search-field svg {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--ink-muted);
+      pointer-events: none;
+    }
+
+    #query {
+      width: 100%;
+      padding: 13px 16px 13px 44px;
+      font-family: 'Source Serif 4', serif;
+      font-size: 1.05rem;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      background: #fff;
+      color: var(--ink);
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+
+    #query:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(184,134,11,.12);
+    }
+
+    #query::placeholder { color: var(--ink-muted); font-style: italic; }
+
+    .btn-search {
+      padding: 0 28px;
+      background: var(--ink);
+      color: var(--cream);
+      border: none;
+      border-radius: var(--radius);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .8rem;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background .2s, transform .1s;
+      white-space: nowrap;
+    }
+
+    .btn-search:hover  { background: #2c2825; }
+    .btn-search:active { transform: scale(.98); }
+    .btn-search:disabled { opacity: .5; cursor: not-allowed; }
+
+    /* Filtros */
+    .filters {
+      display: flex;
+      gap: 14px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .filter-label {
+      font-size: .8rem;
+      color: var(--ink-muted);
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .filter-group {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    select, input[type="number"] {
+      font-family: 'Source Serif 4', serif;
+      font-size: .88rem;
+      padding: 6px 10px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      background: #fff;
+      color: var(--ink);
+      outline: none;
+      transition: border-color .2s;
+    }
+
+    select:focus, input[type="number"]:focus {
+      border-color: var(--gold);
+    }
+
+    input[type="number"] { width: 80px; }
+
+    /* ─────────────────────────────────────────────────────
+       ÁREA DE CONTEÚDO
+    ───────────────────────────────────────────────────── */
+    .content {
+      max-width: var(--max-w);
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    /* Barra de resultados */
+    .results-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .results-count {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .78rem;
+      color: var(--ink-muted);
+      letter-spacing: .06em;
+    }
+
+    .results-count strong {
+      color: var(--ink);
+      font-weight: 600;
+    }
+
+    .export-group {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-export {
+      padding: 7px 16px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      background: #fff;
+      color: var(--ink-soft);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .72rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all .2s;
+    }
+
+    .btn-export:hover {
+      background: var(--ink);
+      color: var(--cream);
+      border-color: var(--ink);
+    }
+
+    .btn-export:disabled { opacity: .4; cursor: not-allowed; }
+
+    /* ─────────────────────────────────────────────────────
+       TABELA
+    ───────────────────────────────────────────────────── */
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: #fff;
+      box-shadow: var(--shadow-sm);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .88rem;
+      min-width: 900px;
+    }
+
+    thead {
+      background: var(--ink);
+      color: var(--cream);
+    }
+
+    thead th {
+      padding: 12px 14px;
+      text-align: left;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .68rem;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      font-weight: 500;
+      white-space: nowrap;
+      border-right: 1px solid rgba(255,255,255,.08);
+    }
+
+    thead th:last-child { border-right: none; }
+
+    tbody tr {
+      border-bottom: 1px solid var(--border-light);
+      transition: background .15s;
+    }
+
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #fdf9f2; }
+
+    tbody td {
+      padding: 12px 14px;
+      vertical-align: top;
+      border-right: 1px solid var(--border-light);
+      color: var(--ink-soft);
+      max-width: 260px;
+    }
+
+    tbody td:last-child { border-right: none; }
+
+    /* Coluna título */
+    .td-title {
+      color: var(--ink) !important;
+      font-weight: 500;
+      font-style: italic;
+    }
+
+    /* Tag de repositório */
+    .repo-tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 2px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .65rem;
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: #fff;
+    }
+
+    .repo-capes  { background: var(--capes); }
+    .repo-scielo { background: var(--scielo); }
+    .repo-bdtd   { background: var(--bdtd); }
+
+    /* Links */
+    a.link-cell {
+      color: var(--gold);
+      text-decoration: none;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .7rem;
+      letter-spacing: .05em;
+    }
+
+    a.link-cell:hover { text-decoration: underline; color: var(--gold-light); }
+
+    /* Resumo truncado */
+    .resumo-cell {
+      max-width: 300px;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      font-size: .82rem;
+      line-height: 1.5;
+      cursor: pointer;
+    }
+
+    .resumo-cell.expanded {
+      -webkit-line-clamp: unset;
+      display: block;
+    }
+
+    /* ─────────────────────────────────────────────────────
+       ESTADOS: LOADING / VAZIO / ERRO
+    ───────────────────────────────────────────────────── */
+    .state-box {
+      text-align: center;
+      padding: 72px 24px;
+      color: var(--ink-muted);
+    }
+
+    .state-icon {
+      font-size: 2.8rem;
+      margin-bottom: 16px;
+      opacity: .5;
+    }
+
+    .state-box h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem;
+      color: var(--ink-soft);
+      margin-bottom: 8px;
+      font-weight: 400;
+      font-style: italic;
+    }
+
+    .state-box p { font-size: .9rem; max-width: 400px; margin: 0 auto; }
+
+    /* Spinner */
+    .spinner {
+      width: 36px; height: 36px;
+      border: 3px solid var(--border);
+      border-top-color: var(--gold);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ─────────────────────────────────────────────────────
+       RODAPÉ
+    ───────────────────────────────────────────────────── */
+    footer {
+      margin-top: 48px;
+      border-top: 1px solid var(--border);
+      padding: 20px 24px;
+      text-align: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .68rem;
+      color: var(--ink-muted);
+      letter-spacing: .08em;
+    }
+
+    /* ─────────────────────────────────────────────────────
+       RESPONSIVO
+    ───────────────────────────────────────────────────── */
+    @media (max-width: 640px) {
+      .search-row { flex-direction: column; }
+      .btn-search { padding: 13px; }
+      .header-rule { display: none; }
+      .source-badges { gap: 6px; }
+      .content { padding: 16px; }
+      .export-group { flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════  CABEÇALHO  ═══════════════════ -->
+<header>
+  <div class="header-inner">
+    <div class="logo-block">
+      <div class="logo-title">Repositório Acadêmico</div>
+      <div class="logo-sub">Busca Integrada · CAPES · SciELO · BDTD</div>
+    </div>
+
+    <div class="header-rule"></div>
+
+    <div class="source-badges">
+      <span class="badge active-capes" onclick="toggleSource('capes',this)" title="Catálogo de Teses e Dissertações">
+        <span class="dot"></span> CAPES
+      </span>
+      <span class="badge active-scielo" onclick="toggleSource('scielo',this)" title="Scientific Electronic Library Online">
+        <span class="dot"></span> SciELO
+      </span>
+      <span class="badge active-bdtd" onclick="toggleSource('bdtd',this)" title="Biblioteca Digital Brasileira de Teses e Dissertações">
+        <span class="dot"></span> BDTD
+      </span>
+    </div>
+  </div>
+</header>
+
+<!-- ═══════════════════  PAINEL DE BUSCA  ═══════════════════ -->
+<div class="search-panel">
+  <div class="search-inner">
+    <div class="search-row">
+      <div class="search-field">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+        </svg>
+        <input
+          type="text"
+          id="query"
+          placeholder="Digite um termo, autor, palavra-chave ou área…"
+          autocomplete="off"
+          spellcheck="false"
+        />
+      </div>
+      <button class="btn-search" onclick="buscar()">Pesquisar</button>
+    </div>
+
+    <div class="filters">
+      <span class="filter-label">Filtros</span>
+
+      <div class="filter-group">
+        <label for="anoMin" style="font-size:.82rem;color:var(--ink-soft)">Ano de</label>
+        <input type="number" id="anoMin" placeholder="1900" min="1900" max="2099" />
+        <label for="anoMax" style="font-size:.82rem;color:var(--ink-soft)">até</label>
+        <input type="number" id="anoMax" placeholder="2025" min="1900" max="2099" />
+      </div>
+
+      <div class="filter-group">
+        <label for="tipo" style="font-size:.82rem;color:var(--ink-soft)">Tipo</label>
+        <select id="tipo">
+          <option value="">Todos</option>
+          <option value="Tese">Tese</option>
+          <option value="Dissertação">Dissertação</option>
+          <option value="Artigo">Artigo Científico</option>
+        </select>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════  CONTEÚDO  ═══════════════════ -->
+<main class="content">
+
+  <!-- Barra de resultados + exportação -->
+  <div class="results-bar" id="resultsBar" style="display:none">
+    <div class="results-count">
+      <strong id="totalCount">0</strong> publicações encontradas
+      <span id="queryLabel" style="color:var(--ink-muted)"></span>
+    </div>
+    <div class="export-group">
+      <button class="btn-export" onclick="exportCSV()">↓ CSV</button>
+      <button class="btn-export" onclick="exportExcel()">↓ Excel</button>
+      <button class="btn-export" onclick="exportPDF()">↓ PDF</button>
+    </div>
+  </div>
+
+  <!-- Área de estado / resultados -->
+  <div id="stateArea">
+    <div class="state-box">
+      <div class="state-icon">📚</div>
+      <h3>Pesquise publicações acadêmicas</h3>
+      <p>Busca simultânea no Catálogo de Teses da CAPES, SciELO e BDTD. Digite um termo acima para começar.</p>
+    </div>
+  </div>
+
+  <div class="table-wrap" id="tableWrap" style="display:none">
+    <table id="resultsTable">
+      <thead>
+        <tr>
+          <th>Repositório</th>
+          <th>Título</th>
+          <th>Autor</th>
+          <th>Ano</th>
+          <th>Titulação / Tipo</th>
+          <th>Instituição / Programa</th>
+          <th>Revista / Periódico</th>
+          <th>Classificação</th>
+          <th>Palavras-chave</th>
+          <th>Resumo</th>
+          <th>Links</th>
+          <th>Região</th>
+        </tr>
+      </thead>
+      <tbody id="resultsBody"></tbody>
+    </table>
+  </div>
+
+</main>
+
+<footer>
+  Busca Acadêmica Integrada · Fontes: CAPES · SciELO · BDTD · v1.0
+</footer>
+
+<!-- ═══════════════════  JAVASCRIPT  ═══════════════════ -->
+<script>
+  // ── Configuração ──────────────────────────────────────
+  const API_BASE   = 'http://localhost:3000';
+  const COLS_EXCEL = ['repositorio','titulo_do_periodico','autor','ano_da_publicacao','titulacao','instituicao_programa','revista','classificacao','palavras_chaves','resumo','link_capes','link_scielo','regiao','volume','validacao','status_mesclagem'];
+
+  let dados      = [];
+  let fonteAtivas = { capes: true, scielo: true, bdtd: true };
+
+  // ── Toggle de fontes ──────────────────────────────────
+  function toggleSource(fonte, el) {
+    fonteAtivas[fonte] = !fonteAtivas[fonte];
+    const classes = { capes:'active-capes', scielo:'active-scielo', bdtd:'active-bdtd' };
+    if (fonteAtivas[fonte]) {
+      el.classList.remove('inactive');
+      el.classList.add(classes[fonte]);
+    } else {
+      el.classList.remove(classes[fonte]);
+      el.classList.add('inactive');
+    }
+  }
+
+  // ── Buscar ────────────────────────────────────────────
+  async function buscar() {
+    const q = document.getElementById('query').value.trim();
+    if (!q) {
+      alert('Por favor, informe um termo de busca.');
+      return;
+    }
+
+    const fontes = Object.entries(fonteAtivas)
+      .filter(([, v]) => v)
+      .map(([k]) => k)
+      .join(',');
+
+    if (!fontes) {
+      alert('Selecione ao menos uma fonte de busca.');
+      return;
+    }
+
+    mostrarLoading(q);
+
+    try {
+      const res = await fetch(`${API_BASE}/api/search?q=${encodeURIComponent(q)}&fontes=${fontes}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const json = await res.json();
+
+      dados = aplicarFiltros(json.resultados || []);
+      mostrarResultados(dados, q);
+    } catch (err) {
+      mostrarErro(err.message);
+    }
+  }
+
+  // ── Filtros locais ────────────────────────────────────
+  function aplicarFiltros(lista) {
+    const anoMin = parseInt(document.getElementById('anoMin').value) || 0;
+    const anoMax = parseInt(document.getElementById('anoMax').value) || 9999;
+    const tipo   = document.getElementById('tipo').value.toLowerCase();
+
+    return lista.filter(item => {
+      const ano  = parseInt(item.ano_da_publicacao) || 0;
+      const tipo_ = (item.titulacao || item.classificacao || '').toLowerCase();
+      if (anoMin && ano && ano < anoMin) return false;
+      if (anoMax && ano && ano > anoMax) return false;
+      if (tipo && !tipo_.includes(tipo)) return false;
+      return true;
+    });
+  }
+
+  // ── Renderizar tabela ─────────────────────────────────
+  function mostrarResultados(lista, q) {
+    const bar   = document.getElementById('resultsBar');
+    const wrap  = document.getElementById('tableWrap');
+    const body  = document.getElementById('resultsBody');
+    const state = document.getElementById('stateArea');
+
+    document.getElementById('totalCount').textContent = lista.length;
+    document.getElementById('queryLabel').textContent = lista.length ? `· "${q}"` : '';
+
+    if (!lista.length) {
+      state.style.display = '';
+      state.innerHTML = `
+        <div class="state-box">
+          <div class="state-icon">🔍</div>
+          <h3>Nenhum resultado encontrado</h3>
+          <p>Tente outros termos de busca ou verifique se o servidor backend está em execução.</p>
+        </div>`;
+      wrap.style.display = 'none';
+      bar.style.display  = 'none';
+      return;
+    }
+
+    state.style.display = 'none';
+    wrap.style.display  = '';
+    bar.style.display   = 'flex';
+
+    body.innerHTML = lista.map(item => {
+      const repo   = (item.repositorio || '').toLowerCase();
+      const tagCls = repo.includes('scielo') ? 'repo-scielo' : repo.includes('bdtd') ? 'repo-bdtd' : 'repo-capes';
+
+      const links = [];
+      if (item.link_capes)  links.push(`<a class="link-cell" href="${esc(item.link_capes)}"  target="_blank" rel="noopener">CAPES ↗</a>`);
+      if (item.link_scielo) links.push(`<a class="link-cell" href="${esc(item.link_scielo)}" target="_blank" rel="noopener">SciELO ↗</a>`);
+
+      return `<tr>
+        <td><span class="repo-tag ${tagCls}">${esc(item.repositorio)}</span></td>
+        <td class="td-title">${esc(item.titulo_do_periodico)}</td>
+        <td>${esc(item.autor)}</td>
+        <td style="white-space:nowrap">${esc(item.ano_da_publicacao)}</td>
+        <td>${esc(item.titulacao)}</td>
+        <td>${esc(item.instituicao_programa)}</td>
+        <td>${esc(item.revista)}</td>
+        <td>${esc(item.classificacao)}</td>
+        <td style="font-size:.78rem;line-height:1.5">${esc(item.palavras_chaves)}</td>
+        <td><div class="resumo-cell" onclick="this.classList.toggle('expanded')">${esc(item.resumo)}</div></td>
+        <td style="white-space:nowrap">${links.join('<br>')}</td>
+        <td>${esc(item.regiao)}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  // ── Estados ───────────────────────────────────────────
+  function mostrarLoading(q) {
+    const state = document.getElementById('stateArea');
+    const wrap  = document.getElementById('tableWrap');
+    const bar   = document.getElementById('resultsBar');
+    wrap.style.display = 'none';
+    bar.style.display  = 'none';
+    state.style.display = '';
+    state.innerHTML = `
+      <div class="state-box">
+        <div class="spinner"></div>
+        <h3>Consultando bases de dados…</h3>
+        <p>Buscando <em>"${esc(q)}"</em> em CAPES, SciELO e BDTD.</p>
+      </div>`;
+  }
+
+  function mostrarErro(msg) {
+    const state = document.getElementById('stateArea');
+    state.style.display = '';
+    state.innerHTML = `
+      <div class="state-box">
+        <div class="state-icon">⚠️</div>
+        <h3>Não foi possível conectar ao servidor</h3>
+        <p>Verifique se o backend está em execução (<code style="font-family:monospace;background:var(--parchment);padding:2px 6px;border-radius:2px">npm start</code> na pasta <code style="font-family:monospace">backend/</code>).</p>
+        <p style="margin-top:8px;font-size:.8rem;color:var(--ink-muted)">${esc(msg)}</p>
+      </div>`;
+  }
+
+  // ── Escape HTML ───────────────────────────────────────
+  function esc(s) {
+    return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ── Exportar CSV ──────────────────────────────────────
+  function exportCSV() {
+    if (!dados.length) return;
+    const header = COLS_EXCEL.join(';');
+    const rows   = dados.map(d => COLS_EXCEL.map(k => `"${String(d[k]||'').replace(/"/g,'""')}"`).join(';'));
+    const csv    = '\uFEFF' + [header, ...rows].join('\n');
+    download(csv, 'busca-academica.csv', 'text/csv;charset=utf-8');
+  }
+
+  // ── Exportar Excel (TSV) ──────────────────────────────
+  function exportExcel() {
+    if (!dados.length) return;
+    const header = COLS_EXCEL.join('\t');
+    const rows   = dados.map(d => COLS_EXCEL.map(k => String(d[k]||'').replace(/\t/g,' ')).join('\t'));
+    const tsv    = '\uFEFF' + [header, ...rows].join('\n');
+    download(tsv, 'busca-academica.xlsx', 'application/vnd.ms-excel;charset=utf-8');
+  }
+
+  // ── Exportar PDF ──────────────────────────────────────
+  function exportPDF() {
+    if (!dados.length) return;
+    const html = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
+    <title>Resultados — Busca Acadêmica</title>
+    <style>
+      body { font-family: Georgia, serif; font-size: 11px; color: #1a1714; padding: 24px; }
+      h1   { font-size: 16px; margin-bottom: 4px; }
+      p    { color: #777; font-size: 10px; margin-bottom: 20px; }
+      table { width: 100%; border-collapse: collapse; }
+      th { background: #1a1714; color: #fff; padding: 6px 8px; text-align: left; font-size: 9px; letter-spacing: .08em; text-transform: uppercase; }
+      td { padding: 6px 8px; border-bottom: 1px solid #eee; vertical-align: top; }
+      tr:nth-child(even) td { background: #fdf9f2; }
+    </style></head><body>
+    <h1>Busca Acadêmica Integrada</h1>
+    <p>Total: ${dados.length} publicação(ões) · Gerado em ${new Date().toLocaleDateString('pt-BR')}</p>
+    <table><thead><tr>
+      <th>Repositório</th><th>Título</th><th>Autor</th><th>Ano</th>
+      <th>Titulação</th><th>Instituição</th><th>Palavras-chave</th>
+    </tr></thead><tbody>
+    ${dados.map(d => `<tr>
+      <td>${d.repositorio}</td><td>${d.titulo_do_periodico}</td><td>${d.autor}</td>
+      <td>${d.ano_da_publicacao}</td><td>${d.titulacao}</td>
+      <td>${d.instituicao_programa}</td><td>${d.palavras_chaves}</td>
+    </tr>`).join('')}
+    </tbody></table></body></html>`;
+    const w = window.open('', '_blank');
+    w.document.write(html);
+    w.document.close();
+    setTimeout(() => w.print(), 800);
+  }
+
+  // ── Helper download ───────────────────────────────────
+  function download(content, filename, mime) {
+    const blob = new Blob([content], { type: mime });
+    const a    = document.createElement('a');
+    a.href     = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  // ── Enter para buscar ─────────────────────────────────
+  document.getElementById('query').addEventListener('keydown', e => {
+    if (e.key === 'Enter') buscar();
+  });
+</script>
+
+</body>
+</html>

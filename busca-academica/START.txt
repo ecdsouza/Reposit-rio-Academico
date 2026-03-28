@@ -1,0 +1,31 @@
+╔══════════════════════════════════════════════════════════╗
+║         BUSCA ACADÊMICA INTEGRADA — Início Rápido        ║
+╚══════════════════════════════════════════════════════════╝
+
+REQUISITO: Node.js instalado (https://nodejs.org)
+
+──────────────────────────────────────────────────────────
+PRIMEIRA VEZ (instalar dependências):
+──────────────────────────────────────────────────────────
+1. Abra o terminal (cmd / PowerShell / Terminal)
+2. cd busca-academica/backend
+3. npm install           ← aguarde (pode demorar alguns minutos)
+4. npm start
+
+──────────────────────────────────────────────────────────
+USOS SEGUINTES (já instalado):
+──────────────────────────────────────────────────────────
+1. cd busca-academica/backend
+2. npm start
+3. Abra frontend/index.html no navegador
+
+──────────────────────────────────────────────────────────
+PARA ENCERRAR: Ctrl + C no terminal
+──────────────────────────────────────────────────────────
+
+Fontes integradas:
+  ● CAPES  — Catálogo de Teses e Dissertações
+  ● SciELO — Artigos científicos
+  ● BDTD   — Biblioteca Digital Brasileira
+
+Exportação disponível: CSV · Excel · PDF
